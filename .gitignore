@@ -1,0 +1,40 @@
+# --- Segredos e credenciais (proteção dupla: pasta + name-glob) ---
+.env
+.env.*
+*.env
+secrets/
+**/secrets/
+*secret*
+*credential*
+*.key
+*.pem
+
+# --- Estado por sessão (não versionar) ---
+_handoff/
+
+# --- Arquivos internos de trabalho (NÃO fazem parte da vitrine pública) ---
+AGENTS.md
+CLAUDE.md
+STATUS.md
+PROJECT_MEMORY.md
+INTEGRATIONS.md
+TASKS.md
+docs/
+
+# --- Tooling interno do agente (nao faz parte da vitrine publica) ---
+.claude/
+
+# --- QA interno (harness de testes + fixtures de execucao; nao e vitrine) ---
+tests/
+
+# --- Sistema / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# --- n8n / temporários ---
+*.tmp
+*.log
+node_modules/

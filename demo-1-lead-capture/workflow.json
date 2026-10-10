@@ -1,0 +1,294 @@
+{
+  "name": "Automation 1 · Capture web form leads into Google Sheets with instant alerts",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1168,
+        -624
+      ],
+      "id": "5464cb82-e38b-483f-90b1-6f334d3402d4",
+      "name": "Form Submission - Tally"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fields = $input.first().json.body?.data?.fields ?? [];\nconst get = (label) => {\n  const f = fields.find((x) => x.label === label);\n  const v = f?.value;\n  return v === null || v === undefined ? \"\" : String(v).replace(/<[^>]*>/g, \"\").trim();\n};\nconst esc = (s) => s.replace(/&/g, \"&amp;\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\");\nconst formatPhone = (p) => {\n  const m = p.replace(/[^\\d+]/g, \"\").match(/^\\+1(\\d{3})(\\d{3})(\\d{4})$/);\n  return m ? `+1 ${m[1]} ${m[2]}-${m[3]}` : p;\n};\n\nconst lead = {\n  name: get(\"Full name\"),\n  email: get(\"Email address\").toLowerCase(),\n  phone: formatPhone(get(\"Phone number\")),\n  company: get(\"Company\"),\n  message: get(\"How can we help?\"),\n  submittedAt: $input.first().json.body?.data?.createdAt ?? new Date().toISOString(),\n};\n\nlead.telegramText =\n  `🔔 <b>New Lead</b>\\n` +\n  `<b>Name:</b> ${esc(lead.name)}\\n` +\n  `<b>Email:</b> ${esc(lead.email)}\\n` +\n  `<b>Phone:</b> ${esc(lead.phone || \"—\")}\\n` +\n  `<b>Company:</b> ${esc(lead.company || \"—\")}\\n` +\n  `<b>Message:</b> ${esc(lead.message)}`;\n\nreturn [{ json: lead }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -624
+      ],
+      "id": "ed40c6e1-1502-4b48-b2d9-8da842b5926e",
+      "name": "Parse + Clean Lead Data"
+    },
+    {
+      "parameters": {
+        "content": "## 🎯 Capture Web Form Leads → Sheet + Instant Alerts\n\n**Who it's for:** small teams collecting leads from a web form that want each lead saved and the team pinged in real time — no manual copy-paste.\n\n### How it works\n1. **Form Submission (Tally) — Webhook** receives the form POST.\n2. **Parse + Clean Lead Data (Code)** normalizes name, email, phone, company, message.\n3. **Save Lead to Google Sheets** appends the lead as a new row.\n4. **Notify Owner (Telegram)** + **Notify Team (Slack)** fire instant alerts.\n\n### Setup steps\n1. Connect **Google Sheets** (OAuth2) → your spreadsheet/sheet.\n2. Connect **Telegram**, set `chatId` (placeholder `<YOUR_TELEGRAM_CHAT_ID>`).\n3. Connect **Slack**, set the destination channel.\n4. Paste this **Webhook** URL into your Tally form's webhook integration.\n5. Send a test submission, confirm a clean run, then **activate**.",
+        "height": 532,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1584,
+        -1072
+      ],
+      "typeVersion": 1,
+      "id": "d5b3f98b-e770-4203-a36f-c9a61b53f2d4",
+      "name": "Overview · Capture Web Form Leads"
+    },
+    {
+      "parameters": {
+        "content": "## 1 · Intake & clean\nReceive the Tally form POST and normalize the raw fields into a clean lead contract.",
+        "height": 386,
+        "width": 432,
+        "color": 1
+      },
+      "id": "5602f223-f9b2-4aa8-8975-ccf84a727051",
+      "name": "1 · Intake & clean",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2 · Persist\nAppend the lead to Google Sheets.",
+        "height": 386,
+        "width": 200,
+        "color": 4
+      },
+      "id": "6de41bc6-4ed1-4a6b-aac0-d78c9f1d76a5",
+      "name": "2 · Persist",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3 · Instant alerts\nPing the owner on Telegram and the team on Slack in real time.",
+        "height": 386,
+        "width": 428,
+        "color": 5
+      },
+      "id": "84d7eeba-b1f6-4b12-8d07-543f17abb886",
+      "name": "3 · Instant alerts",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Your spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "0",
+          "cachedResultName": "Lead"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -704,
+        -624
+      ],
+      "id": "f6f6bfc2-ec7f-4e2f-a098-c5b52d776804",
+      "name": "Save Lead to Google Sheets"
+    },
+    {
+      "parameters": {
+        "chatId": "<YOUR_TELEGRAM_CHAT_ID>",
+        "text": "={{ $('Parse + Clean Lead Data').item.json.telegramText }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        -624
+      ],
+      "id": "cc4b80aa-5a20-4b37-8b15-a9e7e75ee78f",
+      "name": "Notify Owner - Telegram",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "n8n-leads"
+        },
+        "text": "=📥 *New Lead:* {{ $('Parse + Clean Lead Data').item.json.name }} ({{ $('Parse + Clean Lead Data').item.json.company || '—' }})\n*Email:* {{ $('Parse + Clean Lead Data').item.json.email }}  |  *Phone:* {{ $('Parse + Clean Lead Data').item.json.phone }}\n{{ $('Parse + Clean Lead Data').item.json.message }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "348e2d06-dcc6-439f-8009-b092cb51ad75",
+      "name": "Notify Team (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        -624
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    }
+  ],
+  "connections": {
+    "Form Submission - Tally": {
+      "main": [
+        [
+          {
+            "node": "Parse + Clean Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse + Clean Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Save Lead to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Lead to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner - Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team (Slack)": {
+      "main": [
+        []
+      ]
+    },
+    "Notify Owner - Telegram": {
+      "main": [
+        [
+          {
+            "node": "Notify Team (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  }
+}
